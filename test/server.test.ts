@@ -1,10 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
+import { createHmac } from 'node:crypto'
 import net from 'node:net'
 import { fileURLToPath } from 'node:url'
 
 const PORT = 3987
+const SECRET = 's3cret'
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 
 test('shouldStayAliveWhenClientAbortsMidBody', async () => {
@@ -31,6 +33,41 @@ test('shouldStayAliveWhenClientAbortsMidBody', async () => {
     child.kill()
   }
 })
+
+test('shouldAcceptWebhookWhenSignatureArrivesInTheHubSignatureHeader', async () => {
+  const child = startServer()
+  const body = '{"zen":"keep it logically awesome"}'
+
+  try {
+    await waitForHealth()
+    const response = await fetch(`http://127.0.0.1:${PORT}/webhook`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-github-event': 'ping',
+        'x-hub-signature-256': 'sha256=' + createHmac('sha256', SECRET).update(body).digest('hex'),
+      },
+      body,
+    })
+    assert.equal(response.status, 202)
+  } finally {
+    child.kill()
+  }
+})
+
+function startServer() {
+  return spawn(process.execPath, ['src/delivery/server.ts'], {
+    cwd: ROOT,
+    env: {
+      ...process.env,
+      CURFEW_APP_ID: '1',
+      CURFEW_PRIVATE_KEY: 'key',
+      CURFEW_WEBHOOK_SECRET: SECRET,
+      PORT: String(PORT),
+    },
+    stdio: 'ignore',
+  })
+}
 
 async function waitForHealth(): Promise<void> {
   for (let attempt = 0; attempt < 50; attempt++) {

@@ -52,7 +52,8 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
   }
   const raw = Buffer.concat(chunks)
 
-  if (!verifySignature(webhookSecret, raw, req.headers['x-github-signature-256'] as string | undefined)) {
+  const signature = (req.headers['x-hub-signature-256'] ?? req.headers['x-github-signature-256']) as string | undefined
+  if (!verifySignature(webhookSecret, raw, signature)) {
     res.writeHead(401).end()
     return
   }
