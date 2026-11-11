@@ -53,12 +53,27 @@ Override with `CURFEW_POLICY`:
 { "critical": 3, "high": 14, "medium": 60, "low": null }
 ```
 
+## Validation
+
+Curfew has been exercised against real GitHub webhooks and Dependabot alerts in a dedicated lab repository:
+
+| Scenario | Expected result | Observed |
+|---|---|---|
+| Installation-time floor, before SLA expiry | Pass | Pass |
+| High-severity alerts after the SLA window | Fail | Fail |
+| Overdue alerts resolved or dismissed | Pass | Pass |
+| Bot-authored pull request | Excluded, pass | Pass |
+| Human-authored pull request from a fork | Excluded, pass | Pass |
+
+The fork exclusion was verified organically with [lab PR #3](https://github.com/valentinlineiro/curfew-lab/pull/3) and its [Curfew check run](https://github.com/valentinlineiro/curfew-lab/runs/130478981450). The bot exclusion was verified with [lab PR #2](https://github.com/valentinlineiro/curfew-lab/pull/2).
+
+A first production pilot event in Meridian published its check about 1.2 seconds after webhook delivery. This is an initial observation, not a latency benchmark.
+
 ## Known limitations
 
 - **Concurrent evaluations for the same commit.** Two webhooks for the same head SHA can finish out of order, and the later one wins. Alerts, manifest ownership and the evaluation clock may differ between the two runs.
 - **Owner lookup failures look like "no owner".** A transient GitHub error while reading CODEOWNERS or the last commit makes Curfew skip that alert rather than publish a warning.
 - **CODEOWNERS globs are approximated.** `*`, `**`, `?` and leading-`/` anchors are supported; `!` negation and escaped spaces are not.
-- **Check runs on fork commits** have not been verified against GitHub.
 - **No queue.** A webhook is acknowledged before it is processed, so a process exit can lose the event.
 
 ## Development
