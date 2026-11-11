@@ -22,10 +22,11 @@ No owner, no fixable version, or a dismissed alert means no debt.
 ## Setup
 
 1. Create a GitHub App (Settings → Developer settings → GitHub Apps).
-   - Webhook URL: `https://<your-host>/webhook`
+   - Webhook URL: `https://<your-host>/webhook` (GitHub delivers webhooks over HTTPS only; terminate TLS in front of Curfew)
    - Permissions: `checks: write`, `dependabot alerts: read`, `contents: read`, `members: read`
    - Subscribe to: `pull_request`
 2. Install it on the repositories you want covered.
+   - Private repos: Dependabot alerts must be enabled for the organization and the app must be allowed to read them. Without access the alerts API returns 403 and Curfew stays green by design.
 3. Copy `.env.example` to `.env` and fill in the app id, private key and webhook secret.
 4. Run it:
 

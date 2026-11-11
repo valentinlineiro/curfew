@@ -37,7 +37,8 @@ test('shouldPublishFailureWhenAuthorHasOverdueAlerts', async () => {
   await handlePullRequest(job, deps)
   assert.equal(published.length, 1)
   assert.equal(published[0].result.conclusion, 'failure')
-  assert.match(published[0].result.title, /lodash|1 alert/)
+  assert.equal(published[0].result.title, 'Curfew passed: 1 alert')
+  assert.match(published[0].result.summary, /lodash \(critical\) due 2026-01-08/)
 })
 
 test('shouldPublishSuccessWhenAlertSourceThrows', async () => {

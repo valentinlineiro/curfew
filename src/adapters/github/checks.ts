@@ -17,6 +17,7 @@ export function createGitHubCheckPublisher(opts: { token: string; apiUrl?: strin
           'x-github-api-version': '2022-11-28',
           'content-type': 'application/json',
         },
+        signal: AbortSignal.timeout(10_000),
         body: JSON.stringify({
           name: 'curfew',
           head_sha: headSha,

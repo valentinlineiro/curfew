@@ -25,6 +25,45 @@ test('shouldResolveNestedManifestThroughCodeownersGlob', async () => {
   assert.equal(await lookup.ownerFor('acme/api', 'services/api/package.json'), '@ana')
 })
 
+test('shouldPreferCodeownersOverCommitAuthor', async () => {
+  const urls: string[] = []
+  const lookup = createGitHubOwnerLookup({
+    token: 't',
+    fetch: async (url) => {
+      urls.push(String(url))
+      if (String(url).includes('/commits')) return new Response(JSON.stringify([{ author: { login: 'luis' } }]), { status: 200 })
+      if (String(url).endsWith('/contents/.github/CODEOWNERS')) return codeowners('/package.json @ana')
+      return notFound()
+    },
+  })
+  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@ana')
+  assert.equal(urls.some((url) => url.includes('/commits')), false)
+})
+
+test('shouldTryCodeownersPathsInOrderUntilOneExists', async () => {
+  const lookup = createGitHubOwnerLookup({
+    token: 't',
+    fetch: async (url) => {
+      const path = String(url)
+      if (path.endsWith('/contents/CODEOWNERS')) return codeowners('/package.json @ana')
+      if (path.endsWith('/contents/docs/CODEOWNERS')) return codeowners('/package.json @luis')
+      return notFound()
+    },
+  })
+  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@ana')
+})
+
+test('shouldFallBackToCommitAuthorWhenCodeownersOwnsATeam', async () => {
+  const lookup = createGitHubOwnerLookup({
+    token: 't',
+    fetch: async (url) =>
+      String(url).includes('/contents/')
+        ? codeowners('/package.json @acme/team')
+        : new Response(JSON.stringify([{ author: { login: 'luis' } }]), { status: 200 }),
+  })
+  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@luis')
+})
+
 test('shouldFallBackToLastCommitAuthor', async () => {
   const lookup = createGitHubOwnerLookup({
     token: 't',

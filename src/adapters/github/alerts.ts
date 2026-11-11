@@ -29,9 +29,10 @@ export function createGitHubAlertSource(opts: { token: string; apiUrl?: string; 
             accept: 'application/vnd.github+json',
             'x-github-api-version': '2022-11-28',
           },
+          signal: AbortSignal.timeout(10_000),
         })
         // Dependabot off or no permission: no alerts, never a failed gate.
-        if (response.status === 403 || response.status === 404) return alerts
+        if (response.status === 403 || response.status === 404) return []
         if (!response.ok) throw new Error(`github alerts responded ${response.status}`)
 
         const page = (await response.json()) as GitHubAlert[]

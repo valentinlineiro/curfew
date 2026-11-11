@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHmac } from 'node:crypto'
-import { verifySignature, parsePullRequestJob } from '../src/delivery/webhook.ts'
+import { verifySignature, parsePullRequestJob, parseCheckTarget } from '../src/delivery/webhook.ts'
 
 const body = Buffer.from('{"zen":"x"}')
 const sign = (s: string) => 'sha256=' + createHmac('sha256', s).update(body).digest('hex')
@@ -40,6 +40,21 @@ test('shouldIgnoreBotPullRequests', () => {
     pull_request: { head: { sha: 'abc', repo: { full_name: 'acme/api' } }, user: { login: 'renovate[bot]' } },
   }
   assert.equal(parsePullRequestJob('pull_request', payload), null)
+})
+
+test('shouldReturnCheckTargetForBotPullRequestWhenJobIsSkipped', () => {
+  const payload = {
+    action: 'opened',
+    repository: { full_name: 'acme/api' },
+    installation: { id: 42 },
+    pull_request: { head: { sha: 'abc', repo: { full_name: 'acme/api' } }, user: { login: 'dependabot[bot]' } },
+  }
+  assert.equal(parsePullRequestJob('pull_request', payload), null)
+  assert.deepEqual(parseCheckTarget('pull_request', payload), {
+    repo: 'acme/api',
+    headSha: 'abc',
+    installationId: 42,
+  })
 })
 
 test('shouldReturnJobWhenPullRequestIsFromSameRepo', () => {

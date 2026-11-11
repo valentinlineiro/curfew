@@ -20,6 +20,7 @@ export function createGitHubInstallationClock(opts: {
           accept: 'application/vnd.github+json',
           'x-github-api-version': '2022-11-28',
         },
+        signal: AbortSignal.timeout(10_000),
       })
       if (!response.ok) throw new Error(`github installations responded ${response.status}`)
       const { created_at } = (await response.json()) as { created_at: string }

@@ -32,8 +32,9 @@ export async function handlePullRequest(job: PullRequestJob, deps: PullRequestDe
     const debts = evaluateSla({ alerts, owners, policy: deps.policy, now, notBefore })
     const result = gatePullRequest({ repo: job.repo, author: job.author, debts })
     await deps.checks.publish({ repo: job.repo, headSha: job.headSha, result })
-  } catch {
+  } catch (error) {
     // Fail open: a broken gate must never block a merge.
+    console.error('curfew could not evaluate', job.repo, job.headSha, error)
     await deps.checks.publish({
       repo: job.repo,
       headSha: job.headSha,
