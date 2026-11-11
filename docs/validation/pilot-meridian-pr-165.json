@@ -1,0 +1,33 @@
+{
+  "pilot": "meridian",
+  "scenario": "pilot-observation-pr-165",
+  "repo": "valentinlineiro/meridian",
+  "pullRequestNumber": 165,
+  "headSha": "73799f630ea91535ce0c1e8684c022fda0ce1d39",
+  "author": "valentinlineiro",
+  "event": "pull_request.opened",
+  "organicDelivery": true,
+  "webhookDeliveredAt": "2026-11-11T12:12:19.783Z",
+  "check": {
+    "id": 130514877661,
+    "name": "curfew",
+    "status": "completed",
+    "conclusion": "success",
+    "title": "Within curfew",
+    "summary": "No overdue dependency alerts for @valentinlineiro.",
+    "startedAt": "2026-11-11T12:12:21Z",
+    "completedAt": "2026-11-11T12:12:21Z",
+    "url": "https://github.com/valentinlineiro/meridian/runs/130514877661"
+  },
+  "metrics": {
+    "webhookToPublishSeconds": 1.22,
+    "openAlertsCount": 0,
+    "evaluatedDebtsCount": 0,
+    "ciComparison": {
+      "curfewPublishTime": "12:12:21Z",
+      "ciWorkflowStartTime": "12:12:23Z",
+      "ciWorkflowCompletionTime": "12:15:10Z"
+    }
+  },
+  "recordedAt": "2026-11-11T12:47:00.000Z"
+}

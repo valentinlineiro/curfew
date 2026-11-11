@@ -19,6 +19,17 @@ Evidencias obtenidas contra GitHub real en el repositorio [`valentinlineiro/curf
 
 ---
 
+## Piloto en Producción: Meridian
+
+| PR | Target SHA | Autor | Evento | Webhook | Check Run ID | Conclusión | Latencia Webhook→Check | Estado PR |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| [#165](https://github.com/valentinlineiro/meridian/pull/165) | `73799f6...` | `@valentinlineiro` | `pull_request.opened` | 12:12:19Z | [130514877661](https://github.com/valentinlineiro/meridian/runs/130514877661) | `success` | ~1.2 s (completado a las 12:12:21Z) | `MERGED` |
+
+- **Detalle de evidencia:** [pilot-meridian-pr-165.json](./pilot-meridian-pr-165.json)
+- **Observación operativa:** Curfew publicó su resultado informativo a las **12:12:21Z**, dos segundos antes de que el workflow de CI (`test`) siquiera comenzara a ejecutarse (`12:12:23Z`). Cero errores reportados en API ni en el túnel.
+
+---
+
 ## Archivos de Evidencia JSON
 
 1. [scenario-a-real-clock.json](./scenario-a-real-clock.json): Registro con reloj real y detalle de las 5 alertas evaluadas.
@@ -26,6 +37,7 @@ Evidencias obtenidas contra GitHub real en el repositorio [`valentinlineiro/curf
 3. [scenario-c-resolved-alerts.json](./scenario-c-resolved-alerts.json): Registro con alertas resueltas en Dependabot bajo el mismo reloj inyectado.
 4. [scenario-bot-pr.json](./scenario-bot-pr.json): Registro del PR #2 orgánico de Dependabot con check de omisión por bot.
 5. [scenario-fork-pr.json](./scenario-fork-pr.json): Registro del PR #3 orgánico desde fork (`Abell-Systems/curfew-lab`) con autor humano y check de omisión por fork.
+6. [pilot-meridian-pr-165.json](./pilot-meridian-pr-165.json): Primer PR orgánico (#165) evaluado en el piloto real de Meridian.
 
 ---
 
