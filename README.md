@@ -53,6 +53,14 @@ Override with `CURFEW_POLICY`:
 { "critical": 3, "high": 14, "medium": 60, "low": null }
 ```
 
+## Known limitations
+
+- **Concurrent evaluations for the same commit.** Two webhooks for the same head SHA can finish out of order, and the later one wins. Alerts, manifest ownership and the evaluation clock may differ between the two runs.
+- **Owner lookup failures look like "no owner".** A transient GitHub error while reading CODEOWNERS or the last commit makes Curfew skip that alert rather than publish a warning.
+- **CODEOWNERS globs are approximated.** `*`, `**`, `?` and leading-`/` anchors are supported; `!` negation and escaped spaces are not.
+- **Check runs on fork commits** have not been verified against GitHub.
+- **No queue.** A webhook is acknowledged before it is processed, so a process exit can lose the event.
+
 ## Development
 
 ```bash
