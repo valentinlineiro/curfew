@@ -2,7 +2,9 @@
   "name": "curfew",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "test": "node --test",
     "typecheck": "tsc --noEmit",
@@ -11,5 +13,8 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@octokit/auth-app": "^8.3.1"
   }
 }

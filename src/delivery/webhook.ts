@@ -4,7 +4,7 @@ export type PullRequestJob = { repo: string; headSha: string; author: string; in
 
 const ACTIONS = new Set(['opened', 'synchronize', 'reopened'])
 
-type PullRequestPayload = {
+export type PullRequestPayload = {
   action?: string
   repository?: { full_name?: string }
   installation?: { id?: number }
