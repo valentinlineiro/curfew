@@ -1,0 +1,22 @@
+{
+  "scenario": "scenario-bot-pr",
+  "repo": "valentinlineiro/curfew-lab",
+  "pullRequestNumber": 2,
+  "headSha": "6f43735f7c297e3a22a80c1185382db94629b72e",
+  "author": "dependabot[bot]",
+  "event": "pull_request.opened",
+  "organicDelivery": true,
+  "check": {
+    "id": 130476866952,
+    "name": "curfew",
+    "status": "completed",
+    "conclusion": "success",
+    "title": "Within curfew",
+    "summary": "curfew does not evaluate pull requests from bots or forks.",
+    "completedAt": "2026-11-11T10:50:47Z",
+    "url": "https://github.com/valentinlineiro/curfew-lab/runs/130476866952"
+  },
+  "evaluatedAlerts": [],
+  "skippedReason": "bot_author",
+  "recordedAt": "2026-11-11T10:52:00.000Z"
+}

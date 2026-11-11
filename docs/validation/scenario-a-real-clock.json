@@ -1,0 +1,82 @@
+{
+  "scenario": "scenario-a-real-clock",
+  "repo": "valentinlineiro/curfew-lab",
+  "headSha": "50c37f2e4a126668136f95a1f8b130e7b1288a52",
+  "author": "valentinlineiro",
+  "installedAt": "2026-11-11T09:48:05.000Z",
+  "injectedNow": null,
+  "clockMode": "real",
+  "check": {
+    "id": 130455924220,
+    "name": "curfew",
+    "status": "completed",
+    "conclusion": "success",
+    "title": "Within curfew",
+    "summary": "No overdue dependency alerts for @valentinlineiro.",
+    "completedAt": "2026-11-11T10:06:04Z",
+    "url": "https://github.com/valentinlineiro/curfew-lab/runs/130455924220"
+  },
+  "evaluatedAlerts": [
+    {
+      "id": 5,
+      "severity": "high",
+      "package": "lodash",
+      "manifest": "package-lock.json",
+      "state": "open",
+      "publishedAt": "2026-04-01T23:51:12.000Z",
+      "firstPatchedVersion": "4.18.0",
+      "owner": "@valentinlineiro",
+      "dueAt": "2026-12-11T09:48:05.000Z",
+      "overdue": false
+    },
+    {
+      "id": 4,
+      "severity": "medium",
+      "package": "lodash",
+      "manifest": "package-lock.json",
+      "state": "open",
+      "publishedAt": "2026-01-21T23:01:22.000Z",
+      "firstPatchedVersion": "4.17.23",
+      "owner": "@valentinlineiro",
+      "dueAt": "2027-02-09T09:48:05.000Z",
+      "overdue": false
+    },
+    {
+      "id": 3,
+      "severity": "medium",
+      "package": "lodash",
+      "manifest": "package-lock.json",
+      "state": "open",
+      "publishedAt": "2022-01-06T20:30:46.000Z",
+      "firstPatchedVersion": "4.17.21",
+      "owner": "@valentinlineiro",
+      "dueAt": "2027-02-09T09:48:05.000Z",
+      "overdue": false
+    },
+    {
+      "id": 2,
+      "severity": "high",
+      "package": "lodash",
+      "manifest": "package-lock.json",
+      "state": "open",
+      "publishedAt": "2020-07-15T19:15:48.000Z",
+      "firstPatchedVersion": "4.17.19",
+      "owner": "@valentinlineiro",
+      "dueAt": "2026-12-11T09:48:05.000Z",
+      "overdue": false
+    },
+    {
+      "id": 1,
+      "severity": "high",
+      "package": "lodash",
+      "manifest": "package-lock.json",
+      "state": "open",
+      "publishedAt": "2021-05-06T16:05:51.000Z",
+      "firstPatchedVersion": "4.17.21",
+      "owner": "@valentinlineiro",
+      "dueAt": "2026-12-11T09:48:05.000Z",
+      "overdue": false
+    }
+  ],
+  "recordedAt": "2026-11-11T10:06:08.106Z"
+}

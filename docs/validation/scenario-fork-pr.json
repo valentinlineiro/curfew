@@ -1,0 +1,25 @@
+{
+  "scenario": "scenario-fork-pr",
+  "baseRepo": "valentinlineiro/curfew-lab",
+  "headRepo": "Abell-Systems/curfew-lab",
+  "isCrossRepository": true,
+  "pullRequestNumber": 3,
+  "headSha": "c9fdf3c519c5f12440c11e5e62c577faad5d47ef",
+  "author": "valentinlineiro",
+  "isBot": false,
+  "event": "pull_request.opened",
+  "organicDelivery": true,
+  "check": {
+    "id": 130478981450,
+    "name": "curfew",
+    "status": "completed",
+    "conclusion": "success",
+    "title": "Within curfew",
+    "summary": "curfew does not evaluate pull requests from bots or forks.",
+    "completedAt": "2026-11-11T10:55:24Z",
+    "url": "https://github.com/valentinlineiro/curfew-lab/runs/130478981450"
+  },
+  "evaluatedAlerts": [],
+  "skippedReason": "fork_repository",
+  "recordedAt": "2026-11-11T10:56:00.000Z"
+}
