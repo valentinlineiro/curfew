@@ -4,7 +4,7 @@ import { createGitHubAlertSource } from '../adapters/github/alerts.ts'
 import { createGitHubCheckPublisher } from '../adapters/github/checks.ts'
 import { createGitHubInstallationClock } from '../adapters/github/installation.ts'
 import { createGitHubOwnerLookup } from '../adapters/github/owners.ts'
-import { DEFAULT_POLICY, type Policy } from '../domain/policy.ts'
+import { parsePolicy, type Policy } from '../domain/policy.ts'
 import { handlePullRequest } from './handlePullRequest.ts'
 import { parseCheckTarget, parsePullRequestJob, verifySignature, type PullRequestPayload } from './webhook.ts'
 
@@ -14,9 +14,7 @@ const appId = Number(requireEnv('CURFEW_APP_ID'))
 if (!Number.isInteger(appId)) throw new Error('CURFEW_APP_ID must be an integer')
 const privateKey = requireEnv('CURFEW_PRIVATE_KEY').replace(/\\n/g, '\n')
 const webhookSecret = requireEnv('CURFEW_WEBHOOK_SECRET')
-const policy: Policy = process.env.CURFEW_POLICY
-  ? { ...DEFAULT_POLICY, ...JSON.parse(process.env.CURFEW_POLICY) }
-  : DEFAULT_POLICY
+const policy: Policy = parsePolicy(process.env.CURFEW_POLICY)
 
 const auth = createAppAuth({ appId, privateKey })
 const appJwt = async () => (await auth({ type: 'app' })).token

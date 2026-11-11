@@ -31,8 +31,11 @@ export function createGitHubAlertSource(opts: { token: string; apiUrl?: string; 
           },
           signal: AbortSignal.timeout(10_000),
         })
-        // Dependabot off or no permission: no alerts, never a failed gate.
-        if (response.status === 403 || response.status === 404) return []
+        // 404 means Dependabot is disabled, so there is genuinely no alert.
+        if (response.status === 404) return []
+        // A 403 is missing permission or a rate limit: surface it as a warning
+        // check instead of pretending the repo is clean.
+        if (response.status === 403) throw new Error('github alerts forbidden')
         if (!response.ok) throw new Error(`github alerts responded ${response.status}`)
 
         const page = (await response.json()) as GitHubAlert[]

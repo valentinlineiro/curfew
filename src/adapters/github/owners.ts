@@ -25,8 +25,10 @@ export function createGitHubOwnerLookup(opts: { token: string; apiUrl?: string; 
           const { content } = (await response.json()) as { content: string }
           const rules = parseCodeowners(Buffer.from(content, 'base64').toString('utf8'))
           const owner = ownerForPath(manifestPath, rules)
-          // A team cannot author a PR; fall through to the last human who touched the file.
+          // GitHub reads only the first CODEOWNERS file it finds; a rule that
+          // names only teams falls through to the last human who touched the file.
           if (owner && !owner.includes('/')) return owner
+          break
         }
 
         const response = await request(

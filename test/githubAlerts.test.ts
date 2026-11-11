@@ -44,9 +44,14 @@ test('shouldFollowPaginationWhenResponseHasNextLink', async () => {
   assert.match(calls[1], /page=2/)
 })
 
-test('shouldReturnEmptyListWhenDependabotIsUnavailable', async () => {
-  const source = createGitHubAlertSource({ token: 't', fetch: async () => new Response('{}', { status: 403 }) })
+test('shouldReturnEmptyListWhenDependabotIsDisabled', async () => {
+  const source = createGitHubAlertSource({ token: 't', fetch: async () => new Response('{}', { status: 404 }) })
   assert.deepEqual(await source.listOpenAlerts('acme/api'), [])
+})
+
+test('shouldThrowWhenDependabotAlertsAreForbidden', async () => {
+  const source = createGitHubAlertSource({ token: 't', fetch: async () => new Response('{}', { status: 403 }) })
+  await assert.rejects(() => source.listOpenAlerts('acme/api'))
 })
 
 test('shouldThrowOnServerErrorSoTheGateCanFailOpen', async () => {

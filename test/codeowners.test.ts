@@ -16,6 +16,11 @@ test('shouldMatchNestedPathsWithDoubleStar', () => {
   assert.equal(ownerForPath('services/api/package.json', rules), '@ana')
 })
 
+test('shouldPickFirstUserOwnerWhenRuleListsATeamFirst', () => {
+  const rules = parseCodeowners('/package.json @acme/team @ana')
+  assert.equal(ownerForPath('package.json', rules), '@ana')
+})
+
 test('shouldReturnNullWhenNoRuleMatches', () => {
   const rules = parseCodeowners('/web/** @ana')
   assert.equal(ownerForPath('services/api/package.json', rules), null)

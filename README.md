@@ -8,6 +8,8 @@ Ignoring a dependency alert is free today. Curfew puts a price on it: the merge 
 
 - Reads open Dependabot alerts for the repository.
 - Attributes each alert to the owner of its manifest: CODEOWNERS, then the last commit author of that file.
+
+Attribution follows GitHub's rules where they are simple: only the **first** CODEOWNERS file found is used (`.github/CODEOWNERS`, then root, then `docs/`); when a rule lists several owners, the first user is used, and a team-only rule falls back to the last commit author. Supported globs are `*`, `**`, `?` and leading-`/` anchors; `!` negation and escaped spaces are not supported.
 - Applies an SLA to each severity, starting at `published_at` but never before Curfew was installed.
 - Publishes the `curfew` check on the pull request. It fails only when the **PR author** owns overdue debt.
 
@@ -26,7 +28,7 @@ No owner, no fixable version, or a dismissed alert means no debt.
    - Permissions: `checks: write`, `dependabot alerts: read`, `contents: read`, `members: read`
    - Subscribe to: `pull_request`
 2. Install it on the repositories you want covered.
-   - Private repos: Dependabot alerts must be enabled for the organization and the app must be allowed to read them. Without access the alerts API returns 403 and Curfew stays green by design.
+   - Private repos: Dependabot alerts must be enabled for the organization and the app must be allowed to read them. Without access the alerts API returns 403 and Curfew publishes a passing check warning that it could not evaluate.
 3. Copy `.env.example` to `.env` and fill in the app id, private key and webhook secret.
 4. Run it:
 

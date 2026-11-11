@@ -7,7 +7,8 @@ export function parseCodeowners(text: string): CodeownersRule[] {
     .filter((line) => line !== '' && !line.startsWith('#'))
     .map((line) => {
       const [pattern, ...owners] = line.split(/\s+/)
-      return { pattern, owner: owners[0] }
+      // A rule may list several owners; a team cannot author a PR, so attribute to the first user.
+      return { pattern, owner: owners.find((owner) => !owner.includes('/')) ?? owners[0] }
     })
     .filter((rule) => Boolean(rule.owner))
 }

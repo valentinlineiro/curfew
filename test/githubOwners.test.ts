@@ -64,6 +64,19 @@ test('shouldFallBackToCommitAuthorWhenCodeownersOwnsATeam', async () => {
   assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@luis')
 })
 
+test('shouldUseOnlyTheFirstExistingCodeownersFile', async () => {
+  const lookup = createGitHubOwnerLookup({
+    token: 't',
+    fetch: async (url) => {
+      const path = String(url)
+      if (path.endsWith('/contents/.github/CODEOWNERS')) return codeowners('/web/** @ana')
+      if (path.endsWith('/contents/CODEOWNERS')) return codeowners('/package.json @luis')
+      return new Response(JSON.stringify([]), { status: 200 })
+    },
+  })
+  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), null)
+})
+
 test('shouldFallBackToLastCommitAuthor', async () => {
   const lookup = createGitHubOwnerLookup({
     token: 't',
