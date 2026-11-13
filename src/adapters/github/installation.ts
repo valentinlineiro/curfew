@@ -19,6 +19,7 @@ export function createGitHubInstallationClock(opts: {
           authorization: `Bearer ${jwt}`,
           accept: 'application/vnd.github+json',
           'x-github-api-version': '2022-11-28',
+          'user-agent': 'curfew',
         },
         signal: AbortSignal.timeout(10_000),
       })

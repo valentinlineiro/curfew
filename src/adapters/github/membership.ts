@@ -14,6 +14,7 @@ export function createGitHubTeamMembership(opts: {
     authorization: `Bearer ${opts.token}`,
     accept: 'application/vnd.github+json',
     'x-github-api-version': '2022-11-28',
+    'user-agent': 'curfew',
   }
 
   return {

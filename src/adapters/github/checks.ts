@@ -15,6 +15,7 @@ export function createGitHubCheckPublisher(opts: { token: string; apiUrl?: strin
           authorization: `Bearer ${opts.token}`,
           accept: 'application/vnd.github+json',
           'x-github-api-version': '2022-11-28',
+          'user-agent': 'curfew',
           'content-type': 'application/json',
         },
         signal: AbortSignal.timeout(10_000),
