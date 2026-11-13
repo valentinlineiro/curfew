@@ -1,0 +1,27 @@
+{
+  "scenario": "scenario-b",
+  "description": "Escenario B: Alerta crítica/high vencida atribuida al autor (+31 días)",
+  "repo": "valentinlineiro/curfew-lab",
+  "prNumber": 1,
+  "headSha": "50c37f2e4a126668136f95a1f8b130e7b1288a52",
+  "author": "valentinlineiro",
+  "installedAt": "2026-11-11T09:48:05.000Z",
+  "evaluatedNow": "2026-12-12T09:48:05.000Z",
+  "clockMode": "injected",
+  "branchProtection": {
+    "requiredStatusCheck": "curfew",
+    "enforceAdmins": true,
+    "mergeableState": "blocked"
+  },
+  "check": {
+    "id": 131903790192,
+    "name": "curfew",
+    "status": "completed",
+    "conclusion": "failure",
+    "title": "3 overdue alerts",
+    "summary": "@valentinlineiro has overdue dependency alerts in valentinlineiro/curfew-lab:\n\n- lodash (high) due 2026-12-11 [owner: @valentinlineiro]\n- lodash (high) due 2026-12-11 [owner: @valentinlineiro]\n- lodash (high) due 2026-12-11 [owner: @valentinlineiro]",
+    "completedAt": "2026-11-13T13:07:11Z",
+    "url": "https://github.com/valentinlineiro/curfew-lab/runs/131903790192"
+  },
+  "recordedAt": "2026-11-13T13:07:13.153Z"
+}

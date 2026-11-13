@@ -1,0 +1,27 @@
+{
+  "scenario": "scenario-c",
+  "description": "Escenario C: Deuda resuelta y sincronización / nueva evaluación",
+  "repo": "valentinlineiro/curfew-lab",
+  "prNumber": 1,
+  "headSha": "50c37f2e4a126668136f95a1f8b130e7b1288a52",
+  "author": "valentinlineiro",
+  "installedAt": "2026-11-11T09:48:05.000Z",
+  "evaluatedNow": "2026-11-13T13:07:14.657Z",
+  "clockMode": "real",
+  "branchProtection": {
+    "requiredStatusCheck": "curfew",
+    "enforceAdmins": true,
+    "mergeableState": "clean"
+  },
+  "check": {
+    "id": 131903827879,
+    "name": "curfew",
+    "status": "completed",
+    "conclusion": "success",
+    "title": "Within curfew",
+    "summary": "No overdue dependency alerts for @valentinlineiro.",
+    "completedAt": "2026-11-13T13:07:15Z",
+    "url": "https://github.com/valentinlineiro/curfew-lab/runs/131903827879"
+  },
+  "recordedAt": "2026-11-13T13:07:18.260Z"
+}

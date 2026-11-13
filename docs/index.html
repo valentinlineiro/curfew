@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Curfew — Enforceable Dependency Ownership</title>
-  <meta name="description" content="A minimal GitHub App that makes dependency ownership enforceable by tying Dependabot alert resolution deadlines to the developer's merge path.">
-  <meta property="og:title" content="Curfew — Dependency debt should have an owner. And a deadline.">
-  <meta property="og:description" content="A minimal GitHub App that attributes Dependabot alerts via CODEOWNERS, applies severity SLAs, and gates pull requests without punishing the whole team.">
+  <meta name="description" content="Curfew doesn't detect vulnerabilities. It connects Dependabot alerts to the people responsible for fixing them and enforces resolution deadlines on pull requests.">
+  <meta property="og:title" content="Curfew — Dependency debt needs an owner. And a deadline.">
+  <meta property="og:description" content="Curfew connects Dependabot alerts to the people responsible for fixing them. Every pull request becomes an opportunity to enforce dependency hygiene.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://valentinlineiro.github.io/curfew/">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏳</text></svg>">
@@ -19,12 +19,14 @@
       --text-muted: #8b949e;
       --text-dim: #6e7681;
       --accent: #58a6ff;
+      --accent-muted: rgba(88, 166, 255, 0.15);
       --green: #3fb950;
       --green-bg: rgba(63, 185, 80, 0.1);
       --green-border: rgba(63, 185, 80, 0.3);
       --red: #f85149;
       --red-bg: rgba(248, 81, 73, 0.1);
       --red-border: rgba(248, 81, 73, 0.3);
+      --orange: #d29922;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     }
@@ -42,7 +44,7 @@
     a:hover { text-decoration: underline; }
 
     .container {
-      max-width: 980px;
+      max-width: 1040px;
       margin: 0 auto;
       padding: 0 24px;
     }
@@ -51,6 +53,11 @@
     header {
       border-bottom: 1px solid var(--card-border);
       padding: 18px 0;
+      position: sticky;
+      top: 0;
+      background: rgba(13, 17, 23, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 100;
     }
     .nav-inner {
       display: flex;
@@ -86,42 +93,74 @@
 
     /* Hero */
     .hero {
-      padding: 72px 0 56px;
+      padding: 80px 0 60px;
       text-align: center;
     }
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
       font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      margin-bottom: 20px;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin-bottom: 22px;
       background: linear-gradient(180deg, #ffffff 0%, #c9d1d9 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .hero p.lead {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
+      color: var(--text-main);
+      max-width: 760px;
+      margin: 0 auto 16px;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+    .hero p.sublead {
+      font-size: 1.1rem;
       color: var(--text-muted);
-      max-width: 720px;
-      margin: 0 auto 32px;
+      max-width: 680px;
+      margin: 0 auto 36px;
       line-height: 1.5;
     }
-    .badges {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 36px;
+
+    /* Pillars */
+    .hero-pillars {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      max-width: 940px;
+      margin: 0 auto 36px;
+      text-align: left;
     }
-    .badge {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      padding: 4px 10px;
-      border-radius: 6px;
+    .pillar-item {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.92rem;
+      color: var(--text-main);
     }
+    .pillar-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .mantra {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--accent);
+      background: var(--accent-muted);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      padding: 8px 18px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 32px;
+      letter-spacing: 0.03em;
+      font-weight: 600;
+    }
+
     .hero-actions {
       display: flex;
       justify-content: center;
@@ -134,7 +173,7 @@
       justify-content: center;
       font-weight: 600;
       font-size: 0.95rem;
-      padding: 12px 22px;
+      padding: 12px 24px;
       border-radius: 6px;
       transition: all 0.15s ease;
       cursor: pointer;
@@ -159,9 +198,32 @@
       text-decoration: none;
     }
 
+    /* Core Distinction Callout */
+    .thesis-banner {
+      background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(63, 185, 80, 0.08) 100%);
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin: 40px auto 0;
+      max-width: 940px;
+      text-align: left;
+    }
+    .thesis-quote {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .thesis-sub {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+    }
+
     /* Sections */
     section {
-      padding: 56px 0;
+      padding: 64px 0;
       border-top: 1px solid var(--card-border);
     }
     .section-header {
@@ -172,43 +234,99 @@
       font-size: 0.8rem;
       color: var(--accent);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 8px;
     }
     .section-title {
-      font-size: 1.85rem;
+      font-size: 1.95rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.015em;
       color: var(--text-main);
       margin-bottom: 12px;
     }
     .section-desc {
       color: var(--text-muted);
       font-size: 1.05rem;
-      max-width: 680px;
+      max-width: 740px;
+      line-height: 1.55;
     }
 
-    /* Problem Grid */
-    .grid-3 {
+    /* Narrative 3-Layer Grid */
+    .narrative-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
       gap: 20px;
     }
-    .card {
+    .narrative-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 24px;
+      border-radius: 10px;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
     }
-    .card h3 {
-      font-size: 1.15rem;
-      margin-bottom: 10px;
+    .narrative-step {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .narrative-card h3 {
+      font-size: 1.22rem;
+      margin-bottom: 12px;
       color: var(--text-main);
     }
-    .card p {
+    .narrative-card p {
       color: var(--text-muted);
       font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    /* Use Cases Grid (6 Cases) */
+    .use-cases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 20px;
+    }
+    .use-case-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .use-case-num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .use-case-card h3 {
+      font-size: 1.15rem;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+    .use-case-situation {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 16px;
       line-height: 1.5;
+    }
+    .use-case-value {
+      background: rgba(22, 27, 34, 0.8);
+      border-top: 1px solid var(--card-border);
+      padding-top: 14px;
+      font-size: 0.88rem;
+      color: var(--text-main);
+    }
+    .use-case-value strong {
+      color: var(--accent);
     }
 
     /* Steps */
@@ -235,7 +353,7 @@
       font-size: 1rem;
     }
     .step-card h3 {
-      font-size: 1.15rem;
+      font-size: 1.18rem;
       margin-bottom: 6px;
     }
     .step-card p {
@@ -243,52 +361,71 @@
       font-size: 0.95rem;
     }
 
-    /* Scenario / Walkthrough */
-    .scenario-grid {
+    /* Demo 3-Act Grid */
+    .demo-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
       margin-bottom: 24px;
     }
-    @media (max-width: 768px) {
-      .scenario-grid { grid-template-columns: 1fr; }
+    .demo-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
     }
-    .check-box {
-      border-radius: 8px;
-      padding: 20px;
+    .demo-act {
       font-family: var(--font-mono);
-      font-size: 0.88rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      font-weight: 700;
     }
-    .check-box-red {
-      background: var(--red-bg);
-      border: 1px solid var(--red-border);
+    .demo-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      color: var(--text-main);
     }
-    .check-box-green {
+    .demo-card p.demo-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+    .check-preview {
+      border-radius: 6px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      margin-top: auto;
+      line-height: 1.45;
+    }
+    .check-preview-green {
       background: var(--green-bg);
       border: 1px solid var(--green-border);
     }
-    .check-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .check-preview-red {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+    }
+    .check-preview-header {
       font-weight: 700;
-      margin-bottom: 12px;
-      font-size: 0.95rem;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .check-header.red { color: var(--red); }
-    .check-header.green { color: var(--green); }
-    .check-body {
-      color: #e6edf3;
-      white-space: pre-wrap;
-      line-height: 1.5;
-    }
-    .scenario-summary {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 20px;
-      font-size: 0.95rem;
-      color: var(--text-muted);
+    .check-preview-header.green { color: var(--green); }
+    .check-preview-header.red { color: var(--red); }
+    .merge-status {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.15);
+      font-size: 0.78rem;
+      font-weight: 600;
     }
 
     /* Validation Table */
@@ -368,11 +505,11 @@
       background: linear-gradient(180deg, #161b22 0%, #1c2129 100%);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 40px;
+      padding: 44px;
       text-align: center;
     }
     .pilot-card h3 {
-      font-size: 1.7rem;
+      font-size: 1.8rem;
       margin-bottom: 12px;
       color: var(--text-main);
     }
@@ -408,9 +545,11 @@
         <span class="badge-pilot">v0.1.0 pilot</span>
       </div>
       <nav class="nav-links">
-        <a href="#how-it-works">How it works</a>
-        <a href="#scenario">Walkthrough</a>
-        <a href="#validation">Evidence</a>
+        <a href="#thesis">Thesis</a>
+        <a href="#use-cases">Use Cases</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#demo">Demo</a>
+        <a href="#evidence">Evidence</a>
         <a href="https://github.com/valentinlineiro/curfew" target="_blank" rel="noopener">GitHub</a>
       </nav>
     </div>
@@ -419,48 +558,177 @@
   <main>
     <!-- Hero -->
     <div class="container hero">
-      <h1>Dependency debt should have an owner.<br>And a deadline.</h1>
+      <h1>Dependency debt needs an owner.<br>And a deadline.</h1>
       <p class="lead">
-        A minimal GitHub App that makes Dependabot alerts actionable by tying resolution deadlines to the developer's merge path.
+        Curfew connects Dependabot alerts to the people responsible for fixing them.
+      </p>
+      <p class="sublead">
+        Every pull request becomes an opportunity to enforce dependency hygiene.
       </p>
 
-      <div class="badges">
-        <span class="badge">Node.js 24 (native TS)</span>
-        <span class="badge">GitHub Checks</span>
-        <span class="badge">Zero Runtime Database</span>
-        <span class="badge">Open Source</span>
-        <span class="badge">Experimental Pilot</span>
+      <div class="hero-pillars">
+        <div class="pillar-item">
+          <span class="pillar-icon">🎯</span>
+          <span><strong>Ownership</strong> via CODEOWNERS &amp; teams</span>
+        </div>
+        <div class="pillar-item">
+          <span class="pillar-icon">⏱️</span>
+          <span><strong>Deadlines</strong> by vulnerability severity</span>
+        </div>
+        <div class="pillar-item">
+          <span class="pillar-icon">⚡</span>
+          <span><strong>Automated Checks</strong> on pull requests</span>
+        </div>
+        <div class="pillar-item">
+          <span class="pillar-icon">🔒</span>
+          <span><strong>Merge Enforcement</strong> via Branch Protection</span>
+        </div>
+      </div>
+
+      <div>
+        <span class="mantra">Detect it · Assign it · Set a deadline · Enforce it</span>
       </div>
 
       <div class="hero-actions">
-        <a href="#pilot" class="btn btn-primary">Join the pilot</a>
-        <a href="https://github.com/valentinlineiro/curfew" target="_blank" rel="noopener" class="btn btn-secondary">Explore the code</a>
+        <a href="#pilot" class="btn btn-primary">Join the Pilot</a>
+        <a href="https://github.com/valentinlineiro/curfew" target="_blank" rel="noopener" class="btn btn-secondary">Explore on GitHub</a>
+      </div>
+
+      <div class="thesis-banner" id="thesis">
+        <div class="thesis-quote">
+          «Dependabot tells you what is vulnerable. Curfew makes sure someone is responsible and knows when it must be fixed.»
+        </div>
+        <div class="thesis-sub">
+          Vulnerabilities do not linger because tools are missing; they linger because nobody has clear ownership and a deadline. Curfew turns security policy into a verifiable engineering workflow.
+        </div>
       </div>
     </div>
 
-    <!-- The Problem -->
-    <section id="problem">
+    <!-- The 3-Layer Narrative -->
+    <section id="narrative">
       <div class="container">
         <div class="section-header">
-          <div class="section-tag">The Problem</div>
-          <h2 class="section-title">An accountability problem, not a notification problem.</h2>
+          <div class="section-tag">Narrative</div>
+          <h2 class="section-title">A three-layer approach to dependency hygiene</h2>
           <p class="section-desc">
-            Vulnerability scanners flood repositories with alerts, but without ownership or consequences, backlogs grow until an audit or incident forces a scramble.
+            Rather than introducing another scanning engine, Curfew provides the accountability layer that scanners lack.
           </p>
         </div>
 
-        <div class="grid-3">
-          <div class="card">
-            <h3>Alerts accumulate</h3>
-            <p>Dozens of Dependabot PRs sit unmerged. Upgrades compound in risk superlinearly, creating a strong incentive for engineers to avoid touching dependencies.</p>
+        <div class="narrative-grid">
+          <div class="narrative-card">
+            <div class="narrative-step">Layer 1 · The Problem</div>
+            <h3>Detection is not ownership</h3>
+            <p>
+              Scanners flood repos with alerts, but detection alone does not guarantee remediation. Without assigned owners and clear deadlines, backlogs expand until an audit or incident forces an emergency fire drill.
+            </p>
           </div>
-          <div class="card">
-            <h3>Unclear ownership</h3>
-            <p>Security teams flag repositories, but developers don't know who owns which manifest. When everyone is responsible, nobody fixes it.</p>
+          <div class="narrative-card">
+            <div class="narrative-step">Layer 2 · The Mechanism</div>
+            <h3>Ownership, SLAs &amp; Checks</h3>
+            <p>
+              Curfew attributes dependency debt via <code>CODEOWNERS</code>, calculates severity SLAs with an installation floor, and evaluates responsibility at PR time. Zero database, zero background daemons.
+            </p>
           </div>
-          <div class="card">
-            <h3>Zero consequences</h3>
-            <p>Ignoring a critical advisory today is free. Pull requests continue merging, shipping new features on top of vulnerable components.</p>
+          <div class="narrative-card">
+            <div class="narrative-step">Layer 3 · The Outcome</div>
+            <h3>Hygiene as normal workflow</h3>
+            <p>
+              Security hygiene seamlessly integrates into the daily pull request lifecycle. María's overdue debt blocks María, Carlos's work flows unhindered, and dependency maintenance becomes continuous.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 Real Engineering Use Cases -->
+    <section id="use-cases">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Use Cases</div>
+          <h2 class="section-title">Built around real engineering situations</h2>
+          <p class="section-desc">
+            Six everyday scenarios where Curfew transforms informal security conventions into verifiable, low-friction rules.
+          </p>
+        </div>
+
+        <div class="use-cases-grid">
+          <div class="use-case-card">
+            <div>
+              <div class="use-case-num">Case 01</div>
+              <h3>The developer with overdue alerts</h3>
+              <p class="use-case-situation">
+                A developer opens a pull request. Curfew detects they own a critical Dependabot alert that has exceeded its 7-day SLA.
+              </p>
+            </div>
+            <div class="use-case-value">
+              <strong>Value:</strong> Dependency debt stops being invisible. It appears tied directly to a person and a deadline on the merge path.
+            </div>
+          </div>
+
+          <div class="use-case-card">
+            <div>
+              <div class="use-case-num">Case 02</div>
+              <h3>A team sharing component responsibility</h3>
+              <p class="use-case-situation">
+                <code>CODEOWNERS</code> attributes a manifest to <code>@org/backend</code>. If the PR author is a member of that team, Curfew evaluates the team's debt.
+              </p>
+            </div>
+            <div class="use-case-value">
+              <strong>Value:</strong> Collective responsibility becomes a verifiable rule, not an informal agreement that gets forgotten.
+            </div>
+          </div>
+
+          <div class="use-case-card">
+            <div>
+              <div class="use-case-num">Case 03</div>
+              <h3>Maintaining hygiene across feature delivery</h3>
+              <p class="use-case-situation">
+                A pull request has flawless code and passing unit tests, but its author has overdue vulnerable dependencies in that repo.
+              </p>
+            </div>
+            <div class="use-case-value">
+              <strong>Value:</strong> Curfew adds an automated security hygiene dimension to standard code review without adding reviewer fatigue.
+            </div>
+          </div>
+
+          <div class="use-case-card">
+            <div>
+              <div class="use-case-num">Case 04</div>
+              <h3>An organization needing to know who acts</h3>
+              <p class="use-case-situation">
+                A monorepo or large codebase contains dozens of manifests and multiple squads. <code>CODEOWNERS</code> maps alerts to owners.
+              </p>
+            </div>
+            <div class="use-case-value">
+              <strong>Value:</strong> Eliminates ambiguity between detecting a vulnerability and knowing exactly who is responsible for resolving it.
+            </div>
+          </div>
+
+          <div class="use-case-card">
+            <div>
+              <div class="use-case-num">Case 05</div>
+              <h3>Security policy embedded into merge rules</h3>
+              <p class="use-case-situation">
+                The organization configures <code>curfew</code> as a Required Status Check in GitHub Branch Protection.
+              </p>
+            </div>
+            <div class="use-case-value">
+              <strong>Value:</strong> Security policy transitions from an ignored suggestion to an automated, verifiable condition to integrate code.
+            </div>
+          </div>
+
+          <div class="use-case-card">
+            <div>
+              <div class="use-case-num">Case 06</div>
+              <h3>Gradual, low-friction adoption</h3>
+              <p class="use-case-situation">
+                The team installs Curfew in informative mode first, observing evaluation checks before making the check mandatory in branch protection.
+              </p>
+            </div>
+            <div class="use-case-value">
+              <strong>Value:</strong> Progressive adoption with zero unexpected blockages or developer backlash.
+            </div>
           </div>
         </div>
       </div>
@@ -481,7 +749,7 @@
           <div class="step-num">1</div>
           <h3>Attributes each alert via CODEOWNERS</h3>
           <p>
-            Curfew matches open Dependabot alerts against the repository's <code>.github/CODEOWNERS</code> file to identify the user owning that manifest. If no rule matches, it falls back transparently to the last commit author who touched the manifest.
+            Curfew matches open Dependabot alerts against the repository's <code>.github/CODEOWNERS</code> file to identify the user or team owning that manifest. If no rule matches, it falls back transparently to the last commit author who touched the manifest.
           </p>
         </div>
 
@@ -497,64 +765,93 @@
           <div class="step-num">3</div>
           <h3>Gates only the PR author's overdue debt</h3>
           <p>
-            When a PR is opened or synced, Curfew publishes a GitHub Check. It fails <em>only if the author owns overdue debt</em> in that repository. If configured as a required check in branch protection, overdue debt blocks the merge.
+            When a PR is opened or synced, Curfew publishes a GitHub Check. It fails <em>only if the author owns overdue debt</em> (directly or via team membership). With Required Status Checks, overdue debt blocks the merge.
           </p>
         </div>
       </div>
     </section>
 
-    <!-- Walkthrough / Scenario -->
-    <section id="scenario">
+    <!-- Live Demonstration in 3 Acts -->
+    <section id="demo">
       <div class="container">
         <div class="section-header">
-          <div class="section-tag">Walkthrough</div>
-          <h2 class="section-title">María's debt never blocks Carlos</h2>
+          <div class="section-tag">Demonstration</div>
+          <h2 class="section-title">The Three-Act Lifecycle in Action</h2>
           <p class="section-desc">
-            An illustrative everyday scenario in a monorepo showing how Curfew isolates responsibility without halting team delivery.
+            Reproducible validation executed against real GitHub APIs in <a href="https://github.com/valentinlineiro/curfew-lab" target="_blank" rel="noopener"><code>curfew-lab</code></a> with <code>curfew</code> enforced as a Required Status Check.
           </p>
         </div>
 
-        <div class="scenario-grid">
-          <div>
-            <h4 style="margin-bottom: 12px; color: var(--text-main);">1. María (Auth Service Owner)</h4>
-            <div class="check-box check-box-red">
-              <div class="check-header red">❌ curfew — failure</div>
-              <div class="check-body">Curfew passed: 1 alert
-@maria has overdue dependency alerts in acme/backend:
-- jsonwebtoken (critical) due Day 7</div>
-            </div>
-            <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted);">
-              SLA expired on Day 7. María's PR for a new feature is blocked until her service's debt is addressed.
+        <div class="demo-grid">
+          <!-- Act A -->
+          <div class="demo-card">
+            <div class="demo-act" style="color: var(--green);">Act A · Within Curfew</div>
+            <h3>No Overdue Alerts</h3>
+            <p class="demo-desc">
+              PR opened by author with pre-existing alerts within the installation floor grace period. Zero noise.
             </p>
+            <div class="check-preview check-preview-green">
+              <div class="check-preview-header green">
+                <span>✅ curfew</span>
+                <span>SUCCESS</span>
+              </div>
+              <div>Within curfew</div>
+              <div style="color: var(--text-muted); font-size: 0.76rem; margin-top: 4px;">No overdue dependency alerts for author.</div>
+              <div class="merge-status" style="color: var(--green);">PR mergeable_state: CLEAN (Ready)</div>
+            </div>
           </div>
 
-          <div>
-            <h4 style="margin-bottom: 12px; color: var(--text-main);">2. Carlos (Billing Service Owner)</h4>
-            <div class="check-box check-box-green">
-              <div class="check-header green">✅ curfew — success</div>
-              <div class="check-body">Within curfew
-No overdue dependency alerts for @carlos.</div>
-            </div>
-            <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted);">
-              10 minutes later, Carlos opens an urgent billing PR. His check is green. María's debt does not penalize him.
+          <!-- Act B -->
+          <div class="demo-card" style="border-color: var(--red-border);">
+            <div class="demo-act" style="color: var(--red);">Act B · The Value Moment</div>
+            <h3>Overdue Alert Blocks Merge</h3>
+            <p class="demo-desc">
+              Alert exceeds the SLA window. Curfew publishes a failure check, activating GitHub Branch Protection.
             </p>
+            <div class="check-preview check-preview-red">
+              <div class="check-preview-header red">
+                <span>❌ curfew</span>
+                <span>FAILURE</span>
+              </div>
+              <div>3 overdue alerts</div>
+              <div style="color: #ff7b72; font-size: 0.76rem; margin-top: 4px;">lodash (high) due 2026-12-11 [@author]</div>
+              <div class="merge-status" style="color: var(--red);">🔒 PR mergeable_state: BLOCKED</div>
+            </div>
+          </div>
+
+          <!-- Act C -->
+          <div class="demo-card">
+            <div class="demo-act" style="color: var(--accent);">Act C · Resolution</div>
+            <h3>Dependency Updated &amp; Synced</h3>
+            <p class="demo-desc">
+              The author patches the dependency and syncs the PR. Curfew re-evaluates reactively and restores green.
+            </p>
+            <div class="check-preview check-preview-green">
+              <div class="check-preview-header green">
+                <span>✅ curfew</span>
+                <span>SUCCESS</span>
+              </div>
+              <div>Within curfew</div>
+              <div style="color: var(--text-muted); font-size: 0.76rem; margin-top: 4px;">All overdue alerts resolved.</div>
+              <div class="merge-status" style="color: var(--green);">✅ PR mergeable_state: CLEAN (Unblocked)</div>
+            </div>
           </div>
         </div>
 
-        <div class="scenario-summary">
-          <strong>Resolution:</strong> María upgrades <code>jsonwebtoken</code>, the fix merges to the default branch, and Dependabot closes the alert. Upon synchronizing her PR, Curfew re-evaluates and switches immediately to <strong>green</strong> (<code>Within curfew</code>).
+        <div class="callout">
+          🔍 <strong>Why Act B matters:</strong> The happy path proves the tool works; the blocked merge path is what proves its commercial value. The developer cannot bypass hygiene when required status checks are active.
         </div>
       </div>
     </section>
 
     <!-- Technical Trust & Evidence -->
-    <section id="validation">
+    <section id="evidence">
       <div class="container">
         <div class="section-header">
           <div class="section-tag">Empirical Evidence</div>
-          <h2 class="section-title">Validated against real GitHub events</h2>
+          <h2 class="section-title">Verified against real GitHub events</h2>
           <p class="section-desc">
-            Curfew is not verified with simulated mocks. The core behavior has been validated live against production GitHub APIs in a dedicated lab repository.
+            Curfew does not rely on mocks for core verification. Every rule has been tested against production GitHub APIs in <code>curfew-lab</code> and our production pilot repository.
           </p>
         </div>
 
@@ -564,47 +861,53 @@ No overdue dependency alerts for @carlos.</div>
               <tr>
                 <th>Scenario</th>
                 <th>Condition</th>
-                <th>Expected Result</th>
-                <th>Observed Check</th>
+                <th>Expected Check</th>
+                <th>PR Merge Status</th>
+                <th>Observed Run</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td><strong>A. Installation Floor</strong></td>
                 <td>Pre-existing alerts on day zero</td>
-                <td>Pass without blocking</td>
                 <td><span class="status-badge status-pass">Pass (Within curfew)</span></td>
+                <td><code>CLEAN</code></td>
+                <td><a href="https://github.com/valentinlineiro/curfew-lab/runs/131903750005" target="_blank" rel="noopener">Run 131903750005</a></td>
               </tr>
               <tr>
-                <td><strong>B. Temporal Rule</strong></td>
-                <td>Alert window exceeds 30-day SLA</td>
-                <td>Fail with package names &amp; due dates</td>
-                <td><span class="status-badge status-fail">Fail (Curfew passed)</span></td>
+                <td><strong>B. Overdue Debt</strong></td>
+                <td>Alerts exceed 30-day SLA window</td>
+                <td><span class="status-badge status-fail">Fail (3 overdue alerts)</span></td>
+                <td><code>BLOCKED</code></td>
+                <td><a href="https://github.com/valentinlineiro/curfew-lab/runs/131903790192" target="_blank" rel="noopener">Run 131903790192</a></td>
               </tr>
               <tr>
-                <td><strong>C. Debt Resolution</strong></td>
-                <td>Alerts dismissed/resolved in Dependabot</td>
-                <td>Re-evaluate and unblock</td>
+                <td><strong>C. Reactive Unblock</strong></td>
+                <td>Alerts patched &amp; PR synchronized</td>
                 <td><span class="status-badge status-pass">Pass (Within curfew)</span></td>
+                <td><code>CLEAN</code></td>
+                <td><a href="https://github.com/valentinlineiro/curfew-lab/runs/131903827879" target="_blank" rel="noopener">Run 131903827879</a></td>
               </tr>
               <tr>
                 <td><strong>Bot PR Exclusion</strong></td>
                 <td>Pull request by <code>dependabot[bot]</code></td>
-                <td>Skip debt check, publish passing check</td>
                 <td><span class="status-badge status-pass">Pass (Exclusion check)</span></td>
+                <td><code>CLEAN</code></td>
+                <td><a href="https://github.com/valentinlineiro/curfew-lab/runs/130476866952" target="_blank" rel="noopener">Run 130476866952</a></td>
               </tr>
               <tr>
                 <td><strong>Fork PR Exclusion</strong></td>
                 <td>Pull request originating from a fork</td>
-                <td>Skip debt check, publish passing check</td>
                 <td><span class="status-badge status-pass">Pass (Exclusion check)</span></td>
+                <td><code>CLEAN</code></td>
+                <td><a href="https://github.com/valentinlineiro/curfew-lab/runs/130478981450" target="_blank" rel="noopener">Run 130478981450</a></td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <div class="callout">
-          ⚡ <strong>First production observation (Meridian):</strong> In its initial active repository run, Curfew published its GitHub Check <strong>~1.2 seconds</strong> after receiving the webhook — completing before CI runners even began building.
+          ⚡ <strong>Live Production Pilot (Meridian):</strong> Running on Cloudflare Workers edge runtime, Curfew evaluated pull requests and published checks in <strong>~1.2 – 2.0 seconds</strong> — completing before standard CI runners even finished provisioning.
         </div>
       </div>
     </section>
@@ -616,7 +919,7 @@ No overdue dependency alerts for @carlos.</div>
           <div class="section-tag">Engineering Honesty</div>
           <h2 class="section-title">Documented limitations</h2>
           <p class="section-desc">
-            Curfew v0.1.0 is an experimental pilot. These operational constraints are intentionally public before seeking early adopters.
+            Curfew is built with transparent operational boundaries.
           </p>
         </div>
 
@@ -625,10 +928,10 @@ No overdue dependency alerts for @carlos.</div>
             <strong>Approximate CODEOWNERS globs:</strong> Supports <code>*</code>, <code>**</code>, <code>?</code> and leading-<code>/</code> anchors. Negation (<code>!</code>) and escaped spaces are not yet supported.
           </li>
           <li>
-            <strong>No persistent queue:</strong> Webhooks are acknowledged immediately (202 Accepted). A crash or restart during processing can lose an in-flight evaluation.
+            <strong>Fail-open by design:</strong> If GitHub's API returns 5xx or rate limits transitorily, Curfew posts a passing check with an explicit warning. A gate malfunction must never block deployment.
           </li>
           <li>
-            <strong>Fail-open by design:</strong> If GitHub's API returns 5xx or fails transitorily, Curfew posts a passing check with a warning. A gate malfunction must never block an engineering team.
+            <strong>Serverless execution window:</strong> On Cloudflare Workers, evaluation runs in <code>ctx.waitUntil()</code> (30-second window). Suitable for medium repositories; large monorepos with hundreds of manifests will benefit from durable queues.
           </li>
         </ul>
       </div>
@@ -638,13 +941,13 @@ No overdue dependency alerts for @carlos.</div>
     <section id="pilot">
       <div class="container">
         <div class="pilot-card">
-          <h3>Help validate ownership attribution</h3>
+          <h3>Ready to make dependency debt actionable?</h3>
           <p>
-            We are looking for 2–3 engineering teams with active repositories and diverse CODEOWNERS configurations to test Curfew in <strong>informative mode</strong> (zero merge blocking).
+            Test Curfew in <strong>informative mode</strong> on your active repositories with zero merge blocking. See attribution and SLA deadlines in action before deciding to enforce.
           </p>
           <div class="hero-actions">
-            <a href="https://github.com/valentinlineiro/curfew/issues/new?title=Pilot+Interest" target="_blank" rel="noopener" class="btn btn-primary">Join the pilot</a>
-            <a href="https://github.com/valentinlineiro/curfew" target="_blank" rel="noopener" class="btn btn-secondary">View GitHub repository</a>
+            <a href="https://github.com/valentinlineiro/curfew/issues/new?title=Pilot+Interest" target="_blank" rel="noopener" class="btn btn-primary">Join the Pilot</a>
+            <a href="https://github.com/valentinlineiro/curfew" target="_blank" rel="noopener" class="btn btn-secondary">View GitHub Repository</a>
           </div>
         </div>
       </div>

@@ -1,21 +1,40 @@
 # Registro de Evidencias de Validación Real
 
-Evidencias obtenidas contra GitHub real en el repositorio [`valentinlineiro/curfew-lab`](https://github.com/valentinlineiro/curfew-lab).
+Evidencias obtenidas contra GitHub real en el repositorio de laboratorio [`valentinlineiro/curfew-lab`](https://github.com/valentinlineiro/curfew-lab) y en el piloto de producción [`valentinlineiro/meridian`](https://github.com/valentinlineiro/meridian).
 
 * **Installation ID:** `180829360`
 * **App ID:** `5710403`
+* **Branch Protection:** `curfew` configurado como **Required Status Check** en la rama `main` (`enforce_admins: true`).
 
 ---
 
-## Matriz de Escenarios
+## La Demostración en Tres Actos (`curfew-lab`)
+
+Esta secuencia reproducible convierte la tesis de Curfew en una demostración tangible del valor de producto. Se ejecuta con:
+
+```bash
+node --env-file=.env scripts/curfew-lab-demo.mjs all
+```
+
+| Escenario | Situación | Reloj | Check Curfew | Estado PR (`mergeable_state`) | Run URL | Valor demostrado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **A — Sin alertas vencidas** | PR abierto por `@valentinlineiro`. Deuda preexistente dentro del suelo de instalación. | Real | `SUCCESS`<br>`Within curfew` | `CLEAN`<br>✅ Merge habilitado | [Run 131903750005](https://github.com/valentinlineiro/curfew-lab/runs/131903750005) | **Cero fricción inicial:** La deuda histórica no bloquea el trabajo del primer día. El check pasa silenciosamente. |
+| **B — Deuda vencida atribuida al autor** | Alertas `high` superan el SLA de 30 días fijado por la política. | Inyectado (+31d) | `FAILURE`<br>`3 overdue alerts` | `BLOCKED`<br>🔒 **Merge bloqueado** | [Run 131903790192](https://github.com/valentinlineiro/curfew-lab/runs/131903790192) | **El coste de ignorar la deuda:** La política pasa de sugerencia a condición de merge requerida. El PR no puede integrarse. |
+| **C — Deuda resuelta y sincronización** | Se resuelve la vulnerabilidad o se actualiza la dependencia y se sincroniza el PR. | Real / Alertas resueltas | `SUCCESS`<br>`Within curfew` | `CLEAN`<br>✅ Merge restaurado | [Run 131903827879](https://github.com/valentinlineiro/curfew-lab/runs/131903827879) | **Desbloqueo reactivo:** Sin burocracia ni aprobaciones manuales; el flujo vuelve a verde automáticamente al cumplir la higiene. |
+
+> **Nota sobre el Escenario B:** Este es el momento definitorio del producto. La interfaz de GitHub muestra de manera inequívoca: *"Merging is blocked: Required status check 'curfew' is expected."*
+
+---
+
+## Matriz Completa de Escenarios de Validación
 
 | Escenario | PR | Target SHA | Autor | Tipo / Origen | Reloj | Conclusión | Título | Resumen del Check | Run URL | Qué demuestra |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **A — Reloj real** | #1 | `50c37f2e4a126...` | `@valentinlineiro` | Mismo repo | Real (día 0) | `success` | `Within curfew` | `No overdue dependency alerts for @valentinlineiro.` | [Run 130455924220](https://github.com/valentinlineiro/curfew-lab/runs/130455924220) | **Suelo de instalación:** Alertas preexistentes no bloquean el PR en el día 1. |
-| **B — Reloj inyectado** | #1 | `50c37f2e4a126...` | `@valentinlineiro` | Mismo repo | Inyectado (+31d) | `failure` | `Curfew passed: 3 alerts` | Muestra 3 alertas `high` y sus fechas de vencimiento. | [Run 130456023142](https://github.com/valentinlineiro/curfew-lab/runs/130456023142) | **Regla temporal:** Al expirar el SLA (30d), el check publica en rojo en el SHA real. |
-| **C — Deuda resuelta** | #1 | `50c37f2e4a126...` | `@valentinlineiro` | Mismo repo | Inyectado (+31d) | `success` | `Within curfew` | `No overdue dependency alerts for @valentinlineiro.` | [Run 130456180361](https://github.com/valentinlineiro/curfew-lab/runs/130456180361) | **Desbloqueo reactivo:** Con las mismas condiciones temporales, resolver la deuda devuelve el check a verde. |
-| **Bot PR (Escenario 6)** | #2 | `6f43735f7c297...` | `dependabot[bot]` | Mismo repo (bot) | Orgánico (webhook) | `success` | `Within curfew` | `curfew does not evaluate pull requests from bots or forks.` | [Run 130476866952](https://github.com/valentinlineiro/curfew-lab/runs/130476866952) | **Exclusión de bots:** Webhook real de PR abierto por bot; omite evaluación y publica verde. |
-| **Fork PR** | #3 | `c9fdf3c519c5f...` | `@valentinlineiro` | Fork (`Abell-Systems/...`) | Orgánico (webhook) | `success` | `Within curfew` | `curfew does not evaluate pull requests from bots or forks.` | [Run 130478981450](https://github.com/valentinlineiro/curfew-lab/runs/130478981450) | **Exclusión de forks:** PR cruzado desde fork con autor humano; omite evaluación y publica check verde en el SHA del fork. |
+| **A — Suelo de instalación** | #1 | `50c37f2e4a126...` | `@valentinlineiro` | Mismo repo | Real (día 0) | `success` | `Within curfew` | `No overdue dependency alerts for @valentinlineiro.` | [Run 131903750005](https://github.com/valentinlineiro/curfew-lab/runs/131903750005) | Alertas preexistentes respetan el inicio de Curfew. |
+| **B — Bloqueo por SLA** | #1 | `50c37f2e4a126...` | `@valentinlineiro` | Mismo repo | Inyectado (+31d) | `failure` | `3 overdue alerts` | 3 alertas `high` vencidas de `lodash`. | [Run 131903790192](https://github.com/valentinlineiro/curfew-lab/runs/131903790192) | El check falla y activa el bloqueo de GitHub Branch Protection. |
+| **C — Desbloqueo** | #1 | `50c37f2e4a126...` | `@valentinlineiro` | Mismo repo | Sincronización | `success` | `Within curfew` | Deuda resuelta, check en verde. | [Run 131903827879](https://github.com/valentinlineiro/curfew-lab/runs/131903827879) | El PR vuelve a estado `clean`. |
+| **Bot PR** | #2 | `6f43735f7c297...` | `dependabot[bot]` | Mismo repo (bot) | Orgánico (webhook) | `success` | `Within curfew` | `curfew does not evaluate pull requests from bots or forks.` | [Run 130476866952](https://github.com/valentinlineiro/curfew-lab/runs/130476866952) | Exclusión automática de bots sin ruido ni bloqueos. |
+| **Fork PR** | #3 | `c9fdf3c519c5f...` | `@valentinlineiro` | Fork (`Abell-Systems/...`) | Orgánico (webhook) | `success` | `Within curfew` | `curfew does not evaluate pull requests from bots or forks.` | [Run 130478981450](https://github.com/valentinlineiro/curfew-lab/runs/130478981450) | Exclusión de contribuciones externas desde forks. |
 
 ---
 
@@ -23,30 +42,9 @@ Evidencias obtenidas contra GitHub real en el repositorio [`valentinlineiro/curf
 
 | PR | Target SHA | Autor | Evento | Webhook | Check Run ID | Conclusión | Latencia Webhook→Check | Estado PR |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| [#165](https://github.com/valentinlineiro/meridian/pull/165) | `73799f6...` | `@valentinlineiro` | `pull_request.opened` | 12:12:19Z | [130514877661](https://github.com/valentinlineiro/meridian/runs/130514877661) | `success` | ~1.2 s (completado a las 12:12:21Z) | `MERGED` |
-| Meridian | `6031d67...` | `@valentinlineiro` | `pull_request.synchronize` | 11:50:50Z | [131868316002](https://github.com/valentinlineiro/meridian/runs/131868316002) | `success` | ~2.0 s (Cloudflare Worker Edge) | Live |
+| [#165](https://github.com/valentinlineiro/meridian/pull/165) | `73799f6...` | `@valentinlineiro` | `pull_request.opened` | 12:12:19Z | [130514877661](https://github.com/valentinlineiro/meridian/runs/130514877661) | `success` | ~1.2 s (Node local) | `MERGED` |
+| Live Edge | `6031d67...` | `@valentinlineiro` | `pull_request.synchronize` | 11:50:50Z | [131868316002](https://github.com/valentinlineiro/meridian/runs/131868316002) | `success` | ~2.0 s (Cloudflare Worker Edge) | Live |
 
 - **Detalle de evidencia piloto Node:** [pilot-meridian-pr-165.json](./pilot-meridian-pr-165.json)
 - **Detalle de evidencia producción Cloudflare:** [production-cloudflare-worker-meridian.json](./production-cloudflare-worker-meridian.json)
-- **Observación operativa:** Curfew publicó su resultado informativo a las **12:12:21Z**, dos segundos antes de que el workflow de CI (`test`) siquiera comenzara a ejecutarse (`12:12:23Z`). Cero errores reportados en API ni en el túnel.
-
----
-
-## Archivos de Evidencia JSON
-
-1. [scenario-a-real-clock.json](./scenario-a-real-clock.json): Registro con reloj real y detalle de las 5 alertas evaluadas.
-2. [scenario-b-injected-clock.json](./scenario-b-injected-clock.json): Registro con reloj adelantado a 2026-12-12 y listado de las 3 alertas vencidas en el summary.
-3. [scenario-c-resolved-alerts.json](./scenario-c-resolved-alerts.json): Registro con alertas resueltas en Dependabot bajo el mismo reloj inyectado.
-4. [scenario-bot-pr.json](./scenario-bot-pr.json): Registro del PR #2 orgánico de Dependabot con check de omisión por bot.
-5. [scenario-fork-pr.json](./scenario-fork-pr.json): Registro del PR #3 orgánico desde fork (`Abell-Systems/curfew-lab`) con autor humano y check de omisión por fork.
-6. [pilot-meridian-pr-165.json](./pilot-meridian-pr-165.json): Primer PR orgánico (#165) evaluado en el piloto real de Meridian.
-
----
-
-## Conclusión de Validación Funcional
-
-Con estos 5 escenarios queda validado contra GitHub en producción:
-- El cálculo de vencimientos según SLA y el respeto del suelo de instalación.
-- El ciclo completo de publicación de status checks en rojo (`failure`) y en verde (`success`).
-- La actualización reactiva del estado del PR al resolverse las alertas.
-- Los dos mecanismos de exclusión funcional aislados por separado: bots y forks.
+- **Archivos de evidencia demo:** [scenario-a.json](./scenario-a.json), [scenario-b.json](./scenario-b.json), [scenario-c.json](./scenario-c.json)
