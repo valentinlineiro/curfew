@@ -24,8 +24,10 @@ Evidencias obtenidas contra GitHub real en el repositorio [`valentinlineiro/curf
 | PR | Target SHA | Autor | Evento | Webhook | Check Run ID | Conclusión | Latencia Webhook→Check | Estado PR |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | [#165](https://github.com/valentinlineiro/meridian/pull/165) | `73799f6...` | `@valentinlineiro` | `pull_request.opened` | 12:12:19Z | [130514877661](https://github.com/valentinlineiro/meridian/runs/130514877661) | `success` | ~1.2 s (completado a las 12:12:21Z) | `MERGED` |
+| Meridian | `6031d67...` | `@valentinlineiro` | `pull_request.synchronize` | 11:50:50Z | [131868316002](https://github.com/valentinlineiro/meridian/runs/131868316002) | `success` | ~2.0 s (Cloudflare Worker Edge) | Live |
 
-- **Detalle de evidencia:** [pilot-meridian-pr-165.json](./pilot-meridian-pr-165.json)
+- **Detalle de evidencia piloto Node:** [pilot-meridian-pr-165.json](./pilot-meridian-pr-165.json)
+- **Detalle de evidencia producción Cloudflare:** [production-cloudflare-worker-meridian.json](./production-cloudflare-worker-meridian.json)
 - **Observación operativa:** Curfew publicó su resultado informativo a las **12:12:21Z**, dos segundos antes de que el workflow de CI (`test`) siquiera comenzara a ejecutarse (`12:12:23Z`). Cero errores reportados en API ni en el túnel.
 
 ---

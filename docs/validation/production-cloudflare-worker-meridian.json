@@ -1,0 +1,33 @@
+{
+  "environment": "cloudflare-workers",
+  "workerUrl": "https://curfew.valentinlineiro.workers.dev",
+  "scenario": "production-cloudflare-worker-meridian",
+  "repo": "valentinlineiro/meridian",
+  "headSha": "6031d67b222aea34dc61bffdee706244686f7758",
+  "author": "valentinlineiro",
+  "event": "pull_request.synchronize",
+  "webhookDeliveredAt": "2026-11-13T11:50:50.000Z",
+  "workerResponse": {
+    "status": 202,
+    "statusText": "Accepted"
+  },
+  "check": {
+    "id": 131868316002,
+    "name": "curfew",
+    "status": "completed",
+    "conclusion": "success",
+    "title": "Within curfew",
+    "summary": "No overdue dependency alerts for @valentinlineiro.",
+    "startedAt": "2026-11-13T11:50:52Z",
+    "completedAt": "2026-11-13T11:50:52Z",
+    "url": "https://github.com/valentinlineiro/meridian/runs/131868316002"
+  },
+  "runtime": {
+    "platform": "Cloudflare Workers",
+    "compatibilityDate": "2026-11-13",
+    "authFormat": "PKCS#8",
+    "userAgent": "curfew",
+    "asyncExecution": "ctx.waitUntil"
+  },
+  "recordedAt": "2026-11-13T11:55:00.000Z"
+}
