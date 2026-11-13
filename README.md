@@ -9,9 +9,9 @@ Ignoring a dependency alert is free today. Curfew puts a price on it: the merge 
 - Reads open Dependabot alerts for the repository.
 - Attributes each alert to the owner of its manifest: CODEOWNERS, then the last commit author of that file.
 
-Attribution follows GitHub's rules where they are simple: only the **first** CODEOWNERS file found is used (`.github/CODEOWNERS`, then root, then `docs/`); when a rule lists several owners, the first user is used, and a team-only rule falls back to the last commit author. Supported globs are `*`, `**`, `?` and leading-`/` anchors; `!` negation and escaped spaces are not supported.
+Attribution follows GitHub's rules where they are simple: only the **first** CODEOWNERS file found is used (`.github/CODEOWNERS`, then root, then `docs/`); when a rule lists several owners, the first syntactically valid owner is used. Both user owners (`@username`) and team owners (`@org/team-slug`) are supported. If a manifest has no matching rule or no CODEOWNERS file exists, Curfew falls back to the last commit author. When an alert belongs to a team, any PR author who is an active member of that team in GitHub inherits the debt. Supported globs are `*`, `**`, `?` and leading-`/` anchors; `!` negation and escaped spaces are not supported.
 - Applies an SLA to each severity, starting at `published_at` but never before Curfew was installed.
-- Publishes the `curfew` check on the pull request. It fails only when the **PR author** owns overdue debt.
+- Publishes the `curfew` check on the pull request. It fails when the **PR author** owns overdue debt (directly or via team membership).
 
 No owner, no fixable version, or a dismissed alert means no debt.
 
@@ -19,7 +19,8 @@ No owner, no fixable version, or a dismissed alert means no debt.
 
 - **No owner → no block.** Unowned debt is not actionable.
 - **No patched version → no block.**
-- **Fail open.** Any Curfew or GitHub error publishes a passing check with a warning.
+- **Collective responsibility & fail open.** Team alerts apply to authors belonging to that team (`members: read`). Any verification uncertainty (403, 5xx, timeout, network error) fails open without blocking the PR.
+- **Fail open on evaluator errors.** Any unhandled evaluation error publishes a passing check with a warning. A failure to publish the check propagates to the delivery runtime.
 
 ## Setup
 
