@@ -1,4 +1,5 @@
 import type { Severity } from './policy.ts'
+import type { Owner } from './owner.ts'
 
 export type Alert = {
   id: number
@@ -11,4 +12,4 @@ export type Alert = {
   fixAvailable: boolean
 }
 
-export type Debt = { alert: Alert; owner: string; dueAt: Date }
+export type Debt = { alert: Alert; owner: Owner; dueAt: Date }

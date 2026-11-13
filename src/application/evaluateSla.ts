@@ -1,9 +1,10 @@
 import { dueDate, type Policy } from '../domain/policy.ts'
 import type { Alert, Debt } from '../domain/alert.ts'
+import type { Owner } from '../domain/owner.ts'
 
 export function evaluateSla(input: {
   alerts: Alert[]
-  owners: ReadonlyMap<number, string>
+  owners: ReadonlyMap<number, Owner>
   policy: Policy
   now: Date
   notBefore: Date

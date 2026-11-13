@@ -4,6 +4,7 @@ import { createGitHubAlertSource } from '../adapters/github/alerts.ts'
 import { createGitHubCheckPublisher } from '../adapters/github/checks.ts'
 import { createGitHubInstallationClock } from '../adapters/github/installation.ts'
 import { createGitHubOwnerLookup } from '../adapters/github/owners.ts'
+import { createGitHubTeamMembership } from '../adapters/github/membership.ts'
 import { parsePolicy, type Policy } from '../domain/policy.ts'
 import { handlePullRequest } from './handlePullRequest.ts'
 import { parseCheckTarget, parsePullRequestJob, verifySignature, type PullRequestPayload } from './webhook.ts'
@@ -82,6 +83,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
     await handlePullRequest(job, {
       alerts: createGitHubAlertSource({ token }),
       ownerLookup: createGitHubOwnerLookup({ token }),
+      teamMembership: createGitHubTeamMembership({ token }),
       clock: createGitHubInstallationClock({ appAuth: appJwt }),
       checks: createGitHubCheckPublisher({ token }),
       policy,
