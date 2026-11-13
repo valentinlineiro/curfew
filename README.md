@@ -40,6 +40,33 @@ No owner, no fixable version, or a dismissed alert means no debt.
 
 5. In each repository's branch protection, add `curfew` as a required status check.
 
+## Production on Cloudflare Workers
+
+Curfew has two delivery adapters: the local Node HTTP server and a native Cloudflare Worker. Both use the same GitHub App processor and evaluation logic.
+
+1. Authenticate Wrangler with `npx wrangler login`.
+2. Add the GitHub App credentials as Worker secrets:
+
+   ```bash
+   npx wrangler secret put CURFEW_APP_ID
+   npx wrangler secret put CURFEW_PRIVATE_KEY
+   npx wrangler secret put CURFEW_WEBHOOK_SECRET
+   ```
+
+   Set `CURFEW_POLICY` as a Worker variable only if you need to override the defaults.
+3. Deploy with `npx wrangler deploy`.
+4. Set the GitHub App webhook URL to `https://<worker-host>/webhook`, using the HTTPS `workers.dev` URL printed by Wrangler.
+
+The Worker exposes `GET /health` and `POST /webhook`. Its request body limit and HMAC signature validation match the Node adapter.
+
+### Automatic deployment
+
+The deployment workflow runs after the `test` workflow succeeds on a push to `main`. Configure GitHub repository secrets `CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit) and `CLOUDFLARE_ACCOUNT_ID`, then set repository variable `CLOUDFLARE_AUTO_DEPLOY` to `true`. Manual deployment is also available through the `deploy` workflow on `main`.
+
+### Background processing limitation
+
+The Worker acknowledges a valid webhook with HTTP 202 and schedules evaluation through `ctx.waitUntil()`. Cloudflare allows that work to continue for up to 30 seconds after the response; work that exceeds this window can be cancelled. This is not durable queue delivery. If real workloads approach that limit, the next step is Cloudflare Queues with retry and idempotency handling.
+
 ## Policy
 
 Defaults:
@@ -75,7 +102,8 @@ A first production pilot event in Meridian published its check about 1.2 seconds
 - **Concurrent evaluations for the same commit.** Two webhooks for the same head SHA can finish out of order, and the later one wins. Alerts, manifest ownership and the evaluation clock may differ between the two runs.
 - **Owner lookup failures look like "no owner".** A transient GitHub error while reading CODEOWNERS or the last commit makes Curfew skip that alert rather than publish a warning.
 - **CODEOWNERS globs are approximated.** `*`, `**`, `?` and leading-`/` anchors are supported; `!` negation and escaped spaces are not.
-- **No queue.** A webhook is acknowledged before it is processed, so a process exit can lose the event.
+- **No durable queue.** The Node runtime acknowledges before processing, and the Worker uses `ctx.waitUntil()`, which is limited to 30 seconds after the response. An interrupted background task can be lost.
+- **At-least-once delivery is not deduplicated.** GitHub retries can cause repeated evaluation and check publication.
 
 ## Development
 
