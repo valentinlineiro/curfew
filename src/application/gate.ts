@@ -3,7 +3,11 @@ import type { GateResult } from '../domain/check.ts'
 
 export function gatePullRequest(input: { repo: string; author: string; debts: Debt[] }): GateResult {
   const author = input.author.toLowerCase()
-  const mine = input.debts.filter((debt) => debt.owner.replace(/^@/, '').toLowerCase() === author)
+  const mine = input.debts.filter((debt) =>
+    debt.owner.kind === 'user'
+      ? debt.owner.login.toLowerCase() === author
+      : `${debt.owner.org}/${debt.owner.teamSlug}`.toLowerCase() === author,
+  )
 
   if (mine.length === 0) {
     return { conclusion: 'success', title: 'Within curfew', summary: `No overdue dependency alerts for @${input.author}.` }
