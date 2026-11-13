@@ -13,7 +13,7 @@ test('shouldUseCodeownersMatchWhenPresent', async () => {
     fetch: async (url) =>
       String(url).includes('/contents/') ? codeowners('/package.json @ana') : notFound(),
   })
-  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@ana')
+  assert.deepEqual(await lookup.ownerFor('acme/api', 'package.json'), { kind: 'user', login: 'ana' })
 })
 
 test('shouldResolveNestedManifestThroughCodeownersGlob', async () => {
@@ -22,7 +22,7 @@ test('shouldResolveNestedManifestThroughCodeownersGlob', async () => {
     fetch: async (url) =>
       String(url).includes('/contents/') ? codeowners('/services/** @ana') : notFound(),
   })
-  assert.equal(await lookup.ownerFor('acme/api', 'services/api/package.json'), '@ana')
+  assert.deepEqual(await lookup.ownerFor('acme/api', 'services/api/package.json'), { kind: 'user', login: 'ana' })
 })
 
 test('shouldPreferCodeownersOverCommitAuthor', async () => {
@@ -36,7 +36,7 @@ test('shouldPreferCodeownersOverCommitAuthor', async () => {
       return notFound()
     },
   })
-  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@ana')
+  assert.deepEqual(await lookup.ownerFor('acme/api', 'package.json'), { kind: 'user', login: 'ana' })
   assert.equal(urls.some((url) => url.includes('/commits')), false)
 })
 
@@ -50,18 +50,26 @@ test('shouldTryCodeownersPathsInOrderUntilOneExists', async () => {
       return notFound()
     },
   })
-  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@ana')
+  assert.deepEqual(await lookup.ownerFor('acme/api', 'package.json'), { kind: 'user', login: 'ana' })
 })
 
-test('shouldFallBackToCommitAuthorWhenCodeownersOwnsATeam', async () => {
+test('shouldPreserveTeamOwnerFromCodeownersWithoutFallingBackToCommit', async () => {
+  const urls: string[] = []
   const lookup = createGitHubOwnerLookup({
     token: 't',
-    fetch: async (url) =>
-      String(url).includes('/contents/')
+    fetch: async (url) => {
+      urls.push(String(url))
+      return String(url).includes('/contents/')
         ? codeowners('/package.json @acme/team')
-        : new Response(JSON.stringify([{ author: { login: 'luis' } }]), { status: 200 }),
+        : new Response(JSON.stringify([{ author: { login: 'luis' } }]), { status: 200 })
+    },
   })
-  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@luis')
+  assert.deepEqual(await lookup.ownerFor('acme/api', 'package.json'), {
+    kind: 'team',
+    org: 'acme',
+    teamSlug: 'team',
+  })
+  assert.equal(urls.some((url) => url.includes('/commits')), false)
 })
 
 test('shouldUseOnlyTheFirstExistingCodeownersFile', async () => {
@@ -85,7 +93,7 @@ test('shouldFallBackToLastCommitAuthor', async () => {
         ? new Response(JSON.stringify([{ author: { login: 'luis' } }]), { status: 200 })
         : notFound(),
   })
-  assert.equal(await lookup.ownerFor('acme/api', 'package.json'), '@luis')
+  assert.deepEqual(await lookup.ownerFor('acme/api', 'package.json'), { kind: 'user', login: 'luis' })
 })
 
 test('shouldReturnNullWhenNeitherCodeownersNorCommitsExist', async () => {

@@ -22,7 +22,7 @@ function harness(overrides: Partial<PullRequestDeps> = {}) {
   const published: Parameters<CheckPublisher['publish']>[0][] = []
   const deps: PullRequestDeps = {
     alerts: { listOpenAlerts: async () => [alert] },
-    ownerLookup: { ownerFor: async () => '@ana' },
+    ownerLookup: { ownerFor: async () => ({ kind: 'user', login: 'ana' }) },
     clock: { installedAt: async () => new Date('2025-01-01T00:00:00Z') },
     checks: { publish: async (input) => void published.push(input) },
     policy: DEFAULT_POLICY,
@@ -51,7 +51,7 @@ test('shouldPublishSuccessWhenAlertSourceThrows', async () => {
 })
 
 test('shouldPublishSuccessWhenPullRequestAuthorHasNoDebt', async () => {
-  const { deps, published } = harness({ ownerLookup: { ownerFor: async () => '@luis' } })
+  const { deps, published } = harness({ ownerLookup: { ownerFor: async () => ({ kind: 'user', login: 'luis' }) } })
   await handlePullRequest(job, deps)
   assert.equal(published[0].result.conclusion, 'success')
 })

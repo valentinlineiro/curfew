@@ -1,4 +1,6 @@
-export type CodeownersRule = { pattern: string; owner: string }
+import { parseOwner, type Owner } from '../domain/owner.ts'
+
+export type CodeownersRule = { pattern: string; owner: Owner }
 
 export function parseCodeowners(text: string): CodeownersRule[] {
   return text
@@ -7,15 +9,22 @@ export function parseCodeowners(text: string): CodeownersRule[] {
     .filter((line) => line !== '' && !line.startsWith('#'))
     .map((line) => {
       const [pattern, ...owners] = line.split(/\s+/)
-      // A rule may list several owners; a team cannot author a PR, so attribute to the first user.
-      return { pattern, owner: owners.find((owner) => !owner.includes('/')) ?? owners[0] }
+      let validOwner: Owner | null = null
+      for (const token of owners) {
+        const parsed = parseOwner(token)
+        if (parsed) {
+          validOwner = parsed
+          break
+        }
+      }
+      return validOwner ? { pattern, owner: validOwner } : null
     })
-    .filter((rule) => Boolean(rule.owner))
+    .filter((rule): rule is CodeownersRule => rule !== null)
 }
 
 // shortcut: no `!` negation, no escaped spaces; last matching rule wins as on GitHub.
-export function ownerForPath(path: string, rules: CodeownersRule[]): string | null {
-  let owner: string | null = null
+export function ownerForPath(path: string, rules: CodeownersRule[]): Owner | null {
+  let owner: Owner | null = null
   for (const rule of rules) {
     if (matches(rule.pattern, path)) owner = rule.owner
   }

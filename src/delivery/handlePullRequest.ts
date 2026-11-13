@@ -1,6 +1,6 @@
 import { evaluateSla } from '../application/evaluateSla.ts'
 import { gatePullRequest } from '../application/gate.ts'
-import { parseOwner, type Owner } from '../domain/owner.ts'
+import type { Owner } from '../domain/owner.ts'
 import type { Policy } from '../domain/policy.ts'
 import type { AlertSource, CheckPublisher, InstallationClock, OwnerLookup } from '../ports.ts'
 import type { PullRequestJob } from './webhook.ts'
@@ -21,14 +21,13 @@ export async function handlePullRequest(job: PullRequestJob, deps: PullRequestDe
     const alerts = await deps.alerts.listOpenAlerts(job.repo)
 
     const owners = new Map<number, Owner>()
-    const ownerByManifest = new Map<string, string | null>()
+    const ownerByManifest = new Map<string, Owner | null>()
     for (const alert of alerts) {
       if (!ownerByManifest.has(alert.manifestPath)) {
         ownerByManifest.set(alert.manifestPath, await deps.ownerLookup.ownerFor(job.repo, alert.manifestPath))
       }
-      const rawOwner = ownerByManifest.get(alert.manifestPath)
-      const parsed = rawOwner ? parseOwner(rawOwner) : null
-      if (parsed) owners.set(alert.id, parsed)
+      const owner = ownerByManifest.get(alert.manifestPath)
+      if (owner) owners.set(alert.id, owner)
     }
 
     const debts = evaluateSla({ alerts, owners, policy: deps.policy, now, notBefore })

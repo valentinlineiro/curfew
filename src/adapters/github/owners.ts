@@ -25,9 +25,7 @@ export function createGitHubOwnerLookup(opts: { token: string; apiUrl?: string; 
           const { content } = (await response.json()) as { content: string }
           const rules = parseCodeowners(Buffer.from(content, 'base64').toString('utf8'))
           const owner = ownerForPath(manifestPath, rules)
-          // GitHub reads only the first CODEOWNERS file it finds; a rule that
-          // names only teams falls through to the last human who touched the file.
-          if (owner && !owner.includes('/')) return owner
+          if (owner) return owner
           break
         }
 
@@ -37,7 +35,7 @@ export function createGitHubOwnerLookup(opts: { token: string; apiUrl?: string; 
         )
         if (!response.ok) return null
         const [last] = (await response.json()) as { author?: { login?: string } }[]
-        return last?.author?.login ? `@${last.author.login}` : null
+        return last?.author?.login ? { kind: 'user', login: last.author.login.toLowerCase() } : null
       } catch {
         return null
       }
