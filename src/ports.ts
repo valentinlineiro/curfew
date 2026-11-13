@@ -24,3 +24,9 @@ export interface InstallationClock { installedAt(installationId: number): Promis
 export interface CheckPublisher {
   publish(input: { repo: string; headSha: string; result: GateResult }): Promise<void>
 }
+
+export interface Logger {
+  info(message: string, context?: Record<string, unknown>): void
+  warn(message: string, context?: Record<string, unknown>): void
+  error(message: string, context?: Record<string, unknown>): void
+}

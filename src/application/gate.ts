@@ -1,24 +1,30 @@
 import type { Debt } from '../domain/alert.ts'
 import type { GateResult } from '../domain/check.ts'
+import { formatOwner } from '../domain/owner.ts'
 
-export function gatePullRequest(input: { repo: string; author: string; debts: Debt[] }): GateResult {
-  const author = input.author.toLowerCase()
-  const mine = input.debts.filter((debt) =>
-    debt.owner.kind === 'user'
-      ? debt.owner.login.toLowerCase() === author
-      : `${debt.owner.org}/${debt.owner.teamSlug}`.toLowerCase() === author,
-  )
+export function gatePullRequest(input: {
+  repo: string
+  author: string
+  applicableDebts: Debt[]
+}): GateResult {
+  const { repo, author, applicableDebts } = input
 
-  if (mine.length === 0) {
-    return { conclusion: 'success', title: 'Within curfew', summary: `No overdue dependency alerts for @${input.author}.` }
+  if (applicableDebts.length === 0) {
+    return {
+      conclusion: 'success',
+      title: 'Within curfew',
+      summary: `No overdue dependency alerts for @${author}.`,
+    }
   }
 
-  const lines = mine.map((debt) =>
-    `- ${debt.alert.packageName} (${debt.alert.severity}) due ${debt.dueAt.toISOString().slice(0, 10)}`)
+  const lines = applicableDebts.map(
+    (debt) =>
+      `- ${debt.alert.packageName} (${debt.alert.severity}) due ${debt.dueAt.toISOString().slice(0, 10)} [owner: ${formatOwner(debt.owner)}]`,
+  )
 
   return {
     conclusion: 'failure',
-    title: `Curfew passed: ${mine.length} alert${mine.length === 1 ? '' : 's'}`,
-    summary: `@${input.author} has overdue dependency alerts in ${input.repo}:\n\n${lines.join('\n')}`,
+    title: `${applicableDebts.length} overdue alert${applicableDebts.length === 1 ? '' : 's'}`,
+    summary: `@${author} has overdue dependency alerts in ${repo}:\n\n${lines.join('\n')}`,
   }
 }
